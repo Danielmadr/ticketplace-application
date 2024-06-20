@@ -1,0 +1,78 @@
+@eventId = {{createEvent.response.body.id}}
+
+### FindAll
+
+GET http://localhost:3000/events
+
+###FindOne
+
+GET http://localhost:3000/events/{{eventId}}
+
+### Create
+
+# @name createEvent
+POST http://localhost:3000/events
+Content-Type: application/json
+
+  {
+  "name": "Rock in Rio",
+  "description": "Evento de todos os estilos musicais menos rock",
+  "date": "2024-09-15T09:00:00.000Z",
+  "price": 400
+  }
+  
+### Update
+
+PATCH  http://localhost:3000/events/{{eventId}}
+Content-Type: application/json
+
+{
+  "name": "Country in Rio"
+}
+
+### Delete
+ 
+DELETE http://localhost:3000/events/{{eventId}}
+
+
+### Spot Reservation
+
+GET http://localhost:3000/events/{{eventId}}/spots
+
+### Create a spot
+
+POST  http://localhost:3000/events/{{eventId}}/spots
+Content-Type: application/json
+
+{
+  "name": "A2"
+}
+
+###
+
+### Reserve a Spot
+
+POST  http://localhost:3000/events/{{eventId}}/reserve
+Content-Type: application/json
+X-Api-Token: 123
+
+{
+  "spots": ["A2"],
+  "ticket_kind": "full", 
+  "email": "teste@teste.com"
+}
+
+### Edit a Spot
+
+PATCH  http://localhost:3000/events/{{eventId}}/spots/4f8c0b12-522e-4218-b6e9-95f4eba29ea0
+Content-Type: application/json
+
+{
+  "status": "reserved"
+}
+
+### Delete a Spot
+
+DELETE http://localhost:3000/events/{{eventId}}/spots
+
+###
