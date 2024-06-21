@@ -8,8 +8,14 @@ import { PrismaService } from '../prisma/prisma.service';
 @Injectable()
 export class EventsService {
   constructor(private prismaService: PrismaService) {}
+
   create(createEventDto: CreateEventDto) {
-    return this.prismaService.event.create({ data: createEventDto });
+    return this.prismaService.event.create({
+      data: {
+        ...createEventDto,
+        date: new Date(createEventDto.date),
+      },
+    });
   }
 
   findAll() {
@@ -17,18 +23,25 @@ export class EventsService {
   }
 
   findOne(id: string) {
-    return this.prismaService.event.findUnique({ where: { id } });
+    return this.prismaService.event.findUnique({
+      where: { id },
+    });
   }
 
   update(id: string, updateEventDto: UpdateEventDto) {
     return this.prismaService.event.update({
-      data: updateEventDto,
+      data: {
+        ...updateEventDto,
+        date: new Date(updateEventDto.date),
+      },
       where: { id },
     });
   }
 
   remove(id: string) {
-    return this.prismaService.event.delete({ where: { id } });
+    return this.prismaService.event.delete({
+      where: { id },
+    });
   }
 
   async reserveSpot(dto: ReserveSpotDto & { eventId: string }) {
@@ -40,15 +53,12 @@ export class EventsService {
         },
       },
     });
-    console.log(spots, dto.spots.length);
     if (spots.length !== dto.spots.length) {
       const foundSpotsName = spots.map((spot) => spot.name);
-      const notFoundSpots = dto.spots.filter(
+      const notFoundSpotsName = dto.spots.filter(
         (spotName) => !foundSpotsName.includes(spotName),
       );
-      throw new Error(
-        `The following spots were not found: ${notFoundSpots.join(', ')}`,
-      );
+      throw new Error(`Spots ${notFoundSpotsName.join(', ')} not found`);
     }
 
     try {
@@ -82,6 +92,9 @@ export class EventsService {
                   ticketKind: dto.ticket_kind,
                   email: dto.email,
                 },
+                include: {
+                  Spot: true,
+                },
               }),
             ),
           );
@@ -91,14 +104,15 @@ export class EventsService {
         { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted },
       );
       return tickets;
-    } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        switch (error.code) {
-          case 'P2002':
-          case 'P2034':
-            throw new Error('Spot already reserved');
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        switch (e.code) {
+          case 'P2002': // unique constraint violation
+          case 'P2034': // transaction conflict
+            throw new Error('Some spots are already reserved');
         }
       }
+      throw e;
     }
   }
 }

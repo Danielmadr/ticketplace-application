@@ -14,14 +14,15 @@ import { CreateEventRequest } from './request/create-event.request';
 import { UpdateEventRequest } from './request/update-event.request';
 import { ReserveSpotRequest } from './request/reserve-spot.request';
 import { AuthGuard } from '@app/core/auth/auth.guard';
+import { ReserveSpotResponse } from './response/reserve-spot.response';
 
 @Controller('events')
 export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
 
   @Post()
-  create(@Body() createEventDto: CreateEventRequest) {
-    return this.eventsService.create(createEventDto);
+  create(@Body() createEventRequest: CreateEventRequest) {
+    return this.eventsService.create(createEventRequest);
   }
 
   @Get()
@@ -35,8 +36,11 @@ export class EventsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateEventDto: UpdateEventRequest) {
-    return this.eventsService.update(id, updateEventDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateEventRequest: UpdateEventRequest,
+  ) {
+    return this.eventsService.update(id, updateEventRequest);
   }
 
   @HttpCode(204)
@@ -46,11 +50,15 @@ export class EventsController {
   }
 
   @UseGuards(AuthGuard)
-  @Post(':eventId/reserve')
-  reserveSpot(
-    @Body() dto: ReserveSpotRequest,
-    @Param('eventId') eventId: string,
+  @Post(':id/reserve')
+  async reserveSpots(
+    @Body() reserveRequest: ReserveSpotRequest,
+    @Param('id') eventId: string,
   ) {
-    return this.eventsService.reserveSpot({ ...dto, eventId });
+    const tickets = await this.eventsService.reserveSpot({
+      ...reserveRequest,
+      eventId,
+    });
+    return new ReserveSpotResponse(tickets);
   }
 }

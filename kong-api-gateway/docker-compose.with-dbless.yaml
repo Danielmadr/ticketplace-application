@@ -24,4 +24,5 @@ services:
       - ./kong/declarative:/kong/declarative
     extra_hosts:
       - host.docker.internal:host-gateway
+  
 

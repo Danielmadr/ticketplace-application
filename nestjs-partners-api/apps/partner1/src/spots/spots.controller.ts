@@ -17,10 +17,13 @@ export class SpotsController {
 
   @Post()
   create(
-    @Body() createSpotDto: CreateSpotRequest,
+    @Body() createSpotRequest: CreateSpotRequest,
     @Param('eventId') eventId: string,
   ) {
-    return this.spotsService.create({ ...createSpotDto, eventId });
+    return this.spotsService.create({
+      ...createSpotRequest,
+      eventId,
+    });
   }
 
   @Get()
@@ -29,21 +32,21 @@ export class SpotsController {
   }
 
   @Get(':spotId')
-  findOne(@Param('eventId') eventId: string, @Param('spotId') spotId: string) {
+  findOne(@Param('id') spotId: string, @Param('eventId') eventId: string) {
     return this.spotsService.findOne(eventId, spotId);
   }
 
   @Patch(':spotId')
   update(
+    @Param('id') spotId: string,
     @Param('eventId') eventId: string,
-    @Param('spotId') spotId: string,
-    @Body() updateSpotDto: UpdateSpotRequest,
+    @Body() updateSpotRequest: UpdateSpotRequest,
   ) {
-    return this.spotsService.update(eventId, spotId, updateSpotDto);
+    return this.spotsService.update(eventId, spotId, updateSpotRequest);
   }
 
   @Delete(':spotId')
-  remove(@Param('eventId') eventId: string, @Param('spotId') spotId: string) {
+  remove(@Param('id') spotId: string, @Param('eventId') eventId: string) {
     return this.spotsService.remove(eventId, spotId);
   }
 }
